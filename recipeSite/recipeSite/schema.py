@@ -91,6 +91,7 @@ class CreateRecipe(graphene.Mutation):
                         prepTime=datetime.timedelta(seconds=prepTime),
                         totalTime=datetime.timedelta(seconds=totalTime), author=author, datePublished=datePublished,
                         description=description, name=name)
+        recipe.save()
         return CreateRecipe(ok=True, recipe=recipe)
 
 
