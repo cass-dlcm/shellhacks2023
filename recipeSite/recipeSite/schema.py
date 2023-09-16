@@ -6,8 +6,21 @@ from graphene_django import DjangoObjectType
 from cookbook.models import Recipe, RecipeTool, RecipeSupply, RecipeIngredient, RecipeInstruction
 
 
+class IngredientType(DjangoObjectType):
+    class Meta:
+        model = RecipeIngredient
+        fields = ("id", "amount", "unit", "item", "recipe")
+
+
+class InstructionType(DjangoObjectType):
+    class Meta:
+        model = RecipeInstruction
+        fields = ("id", "stepNumber", "instruction", "recipe")
+
+
 class RecipeType(DjangoObjectType):
-    recipeIngredients = graphene.Field(lambda: IngredientType)
+    recipeIngredients = graphene.List(IngredientType)
+    recipeInstructions = graphene.List(InstructionType)
     def resolve_cookTime(self, info):
         return self.cookTime.total_seconds()
 
@@ -20,14 +33,17 @@ class RecipeType(DjangoObjectType):
     def resolve_totalTime(self, info):
         return self.totalTime.total_seconds()
 
-    def resolve_recipeIngredient(self, info):
-        return self.recipeIngredients.all()
+    def resolve_recipeIngredients(self, info):
+        return list(self.recipeIngredients.all())
+
+    def resolve_recipeInstructions(self, info):
+        return list(self.recipeInstructions.all())
 
     class Meta:
         model = Recipe
         fields = ("id", "name", "recipeCategory", "recipeCuisine", "recipeYieldAmount", "recipeYieldUnits",
                   "estimatedCost", "preformTime", "prepTime", "totalTime", "author", "datePublished", "description",
-                  "cookTime", "cookingMethod", "recipeIngredients")
+                  "cookTime", "cookingMethod", "recipeIngredients", "recipeInstructions")
 
 
 class ToolType(DjangoObjectType):
@@ -42,22 +58,10 @@ class SupplyType(DjangoObjectType):
         fields = ("id", "amount", "unit", "item", "recipe")
 
 
-class IngredientType(DjangoObjectType):
-    class Meta:
-        model = RecipeIngredient
-        fields = ("id", "amount", "unit", "item", "recipe")
-
-
 class IngredientInputType(graphene.InputObjectType):
     amount = graphene.Int(required=True)
     unit = graphene.String()
     item = graphene.String(required=True)
-
-
-class InstructionType(DjangoObjectType):
-    class Meta:
-        model = RecipeInstruction
-        fields = ("id", "stepNumber", "instruction", "recipe")
 
 
 class InstructionInputType(graphene.InputObjectType):
