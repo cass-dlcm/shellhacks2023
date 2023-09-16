@@ -7,6 +7,7 @@ from cookbook.models import Recipe, RecipeTool, RecipeSupply, RecipeIngredient, 
 
 
 class RecipeType(DjangoObjectType):
+    recipeIngredients = graphene.Field(lambda: IngredientType)
     def resolve_cookTime(self, info):
         return self.cookTime.total_seconds()
 
@@ -19,11 +20,14 @@ class RecipeType(DjangoObjectType):
     def resolve_totalTime(self, info):
         return self.totalTime.total_seconds()
 
+    def resolve_recipeIngredient(self, info):
+        return self.recipeIngredients.all()
+
     class Meta:
         model = Recipe
         fields = ("id", "name", "recipeCategory", "recipeCuisine", "recipeYieldAmount", "recipeYieldUnits",
                   "estimatedCost", "preformTime", "prepTime", "totalTime", "author", "datePublished", "description",
-                  "cookTime", "cookingMethod")
+                  "cookTime", "cookingMethod", "recipeIngredients")
 
 
 class ToolType(DjangoObjectType):
@@ -42,6 +46,12 @@ class IngredientType(DjangoObjectType):
     class Meta:
         model = RecipeIngredient
         fields = ("id", "amount", "unit", "item", "recipe")
+
+
+class IngredientInputType(graphene.InputObjectType):
+    amount = graphene.Int(required=True)
+    unit = graphene.String()
+    item = graphene.String(required=True)
 
 
 class InstructionType(DjangoObjectType):
@@ -77,13 +87,14 @@ class CreateRecipe(graphene.Mutation):
         datePublished = graphene.Date()
         description = graphene.String()
         name = graphene.String()
+        recipeIngredients = graphene.List(IngredientInputType)
     ok = graphene.Boolean()
     recipe = graphene.Field(lambda: RecipeType)
 
     @classmethod
     def mutate(cls, root, info, cookTime, cookingMethod, recipeCategory, recipeCuisine, recipeYieldAmount,
                recipeYieldUnits, estimatedCost, preformTime, prepTime, totalTime, author, datePublished, description,
-               name):
+               name, recipeIngredients):
         recipe = Recipe(cookTime=datetime.timedelta(seconds=cookTime), cookingMethod=cookingMethod,
                         recipeCategory=recipeCategory, recipeCuisine=recipeCuisine, recipeYieldAmount=recipeYieldAmount,
                         recipeYieldUnits=recipeYieldUnits, estimatedCost=estimatedCost,
@@ -92,6 +103,9 @@ class CreateRecipe(graphene.Mutation):
                         totalTime=datetime.timedelta(seconds=totalTime), author=author, datePublished=datePublished,
                         description=description, name=name)
         recipe.save()
+        for ingredient in recipeIngredients:
+            recipe.recipeIngredients.create(amount=ingredient.amount, unit=ingredient.unit,
+                                            item=ingredient.item)
         return CreateRecipe(ok=True, recipe=recipe)
 
 
