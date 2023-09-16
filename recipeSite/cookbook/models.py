@@ -27,16 +27,14 @@ class Recipe(models.Model):
     description = models.TextField()
     name = models.CharField(max_length=100)
 
-    def tools(self):
-        return self.recipetool_set
-
     def __str__(self):
         return self.name
+
 
 class RecipeInstruction(models.Model):
     stepNumber = models.PositiveIntegerField()
     instruction = models.TextField()
-    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
+    recipe = models.ForeignKey(Recipe, related_name="recipeInstructions", on_delete=models.CASCADE)
 
     def __str__(self):
         return str(self.stepNumber) + self.instruction.__str__()
@@ -64,7 +62,7 @@ class RecipeSupply(models.Model):
 
 class RecipeTool(models.Model):
     item = models.TextField()
-    recipe = models.ManyToManyField(Recipe)
+    recipe = models.ManyToManyField(Recipe, related_name="tools")
 
     def __str__(self):
         return self.item
