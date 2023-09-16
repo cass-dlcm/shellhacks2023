@@ -50,17 +50,26 @@ class RecipeType(DjangoObjectType):
     def resolve_recipeSupplies(self, info):
         return list(self.recipeSupplies.all())
 
+    def resolve_toolsUsed(self, info):
+        return list(self.toolsUsed.all())
+
     class Meta:
         model = Recipe
         fields = ("id", "name", "recipeCategory", "recipeCuisine", "recipeYieldAmount", "recipeYieldUnits",
                   "estimatedCost", "preformTime", "prepTime", "totalTime", "author", "datePublished", "description",
-                  "cookTime", "cookingMethod", "recipeIngredients", "recipeInstructions", "recipeSupplies")
+                  "cookTime", "cookingMethod", "recipeIngredients", "recipeInstructions", "recipeSupplies", "toolsUsed")
 
 
 class ToolType(DjangoObjectType):
+    def resolve_usedInRecipe(self, info):
+        return list(self.usedInRecipe.all())
     class Meta:
         model = RecipeTool
-        fields = ("id", "item")
+        fields = ("id", "item", "usedInRecipe")
+
+
+class ToolInputType(graphene.InputObjectType):
+    item = graphene.String()
 
 
 class IngredientInputType(graphene.InputObjectType):
@@ -110,13 +119,14 @@ class CreateRecipe(graphene.Mutation):
         recipeIngredients = graphene.List(IngredientInputType)
         recipeInstructions = graphene.List(InstructionInputType)
         recipeSupplies = graphene.List(SupplyInputType)
+        toolsUsed = graphene.List(ToolInputType)
     ok = graphene.Boolean()
     recipe = graphene.Field(lambda: RecipeType)
 
     @classmethod
     def mutate(cls, root, info, cookTime, cookingMethod, recipeCategory, recipeCuisine, recipeYieldAmount,
                recipeYieldUnits, estimatedCost, preformTime, prepTime, totalTime, author, datePublished, description,
-               name, recipeIngredients, recipeInstructions, recipeSupplies):
+               name, recipeIngredients, recipeInstructions, recipeSupplies, toolsUsed):
         recipe = Recipe(cookTime=datetime.timedelta(seconds=cookTime), cookingMethod=cookingMethod,
                         recipeCategory=recipeCategory, recipeCuisine=recipeCuisine, recipeYieldAmount=recipeYieldAmount,
                         recipeYieldUnits=recipeYieldUnits, estimatedCost=estimatedCost,
@@ -132,6 +142,12 @@ class CreateRecipe(graphene.Mutation):
             recipe.recipeInstructions.create(stepNumber=instruction.stepNumber, instruction=instruction.instruction)
         for supply in recipeSupplies:
             recipe.recipeSupplies.create(amount=supply.amount, unit=supply.unit, item=supply.item)
+        for tool in toolsUsed:
+            foundTool = RecipeTool.objects.filter(item=tool.item)
+            if foundTool.count() == 0:
+                recipe.toolsUsed.create(item=tool.item)
+            elif foundTool.count() == 1:
+                recipe.toolsUsed.add(foundTool.get(item=tool.item))
         return CreateRecipe(ok=True, recipe=recipe)
 
 

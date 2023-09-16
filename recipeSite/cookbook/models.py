@@ -62,7 +62,7 @@ class RecipeSupply(models.Model):
 
 class RecipeTool(models.Model):
     item = models.TextField()
-    recipe = models.ManyToManyField(Recipe, related_name="tools")
+    usedInRecipe = models.ManyToManyField(Recipe, related_name="toolsUsed")
 
     def __str__(self):
         return self.item
