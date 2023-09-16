@@ -7,6 +7,7 @@ from cookbook.models import Recipe, RecipeTool, RecipeSupply, RecipeIngredient, 
 
 
 class RecipeType(DjangoObjectType):
+    recipeIngredients = graphene.Field(lambda: IngredientType)
     def resolve_cookTime(self, info):
         return self.cookTime.total_seconds()
 
@@ -19,11 +20,14 @@ class RecipeType(DjangoObjectType):
     def resolve_totalTime(self, info):
         return self.totalTime.total_seconds()
 
+    def resolve_recipeIngredient(self, info):
+        return self.recipeIngredients.all()
+
     class Meta:
         model = Recipe
         fields = ("id", "name", "recipeCategory", "recipeCuisine", "recipeYieldAmount", "recipeYieldUnits",
                   "estimatedCost", "preformTime", "prepTime", "totalTime", "author", "datePublished", "description",
-                  "cookTime", "cookingMethod")
+                  "cookTime", "cookingMethod", "recipeIngredients")
 
 
 class ToolType(DjangoObjectType):
