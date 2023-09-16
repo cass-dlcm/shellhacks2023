@@ -44,7 +44,7 @@ class RecipeInstruction(models.Model):
 
 class RecipeIngredient(models.Model):
     amount = models.IntegerField()
-    unit = models.TextField()
+    unit = models.TextField(blank=True, null=True)
     item = models.TextField()
     recipe = models.ForeignKey(Recipe, related_name="recipeIngredients", on_delete=models.CASCADE)
 
