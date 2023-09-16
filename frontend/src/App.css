@@ -1,0 +1,10 @@
+.recipeContainer {
+  display: flex;
+  flex-direction: row;
+  margin-top: 50px;
+}
+
+.recipeItem {
+  padding: 20px;
+}
+
