@@ -60,6 +60,11 @@ class InstructionType(DjangoObjectType):
         fields = ("id", "stepNumber", "instruction", "recipe")
 
 
+class InstructionInputType(graphene.InputObjectType):
+    stepNumber = graphene.Int(required=True)
+    instruction = graphene.String(required=True)
+
+
 class Query(graphene.ObjectType):
     all_recipies = graphene.List(RecipeType)
     all_tools = graphene.List(ToolType)
@@ -88,13 +93,14 @@ class CreateRecipe(graphene.Mutation):
         description = graphene.String()
         name = graphene.String()
         recipeIngredients = graphene.List(IngredientInputType)
+        recipeInstructions = graphene.List(InstructionInputType)
     ok = graphene.Boolean()
     recipe = graphene.Field(lambda: RecipeType)
 
     @classmethod
     def mutate(cls, root, info, cookTime, cookingMethod, recipeCategory, recipeCuisine, recipeYieldAmount,
                recipeYieldUnits, estimatedCost, preformTime, prepTime, totalTime, author, datePublished, description,
-               name, recipeIngredients):
+               name, recipeIngredients, recipeInstructions):
         recipe = Recipe(cookTime=datetime.timedelta(seconds=cookTime), cookingMethod=cookingMethod,
                         recipeCategory=recipeCategory, recipeCuisine=recipeCuisine, recipeYieldAmount=recipeYieldAmount,
                         recipeYieldUnits=recipeYieldUnits, estimatedCost=estimatedCost,
@@ -106,6 +112,8 @@ class CreateRecipe(graphene.Mutation):
         for ingredient in recipeIngredients:
             recipe.recipeIngredients.create(amount=ingredient.amount, unit=ingredient.unit,
                                             item=ingredient.item)
+        for instruction in recipeInstructions:
+            recipe.recipeInstructions.create(stepNumber=instruction.stepNumber, instruction=instruction.instruction)
         return CreateRecipe(ok=True, recipe=recipe)
 
 
