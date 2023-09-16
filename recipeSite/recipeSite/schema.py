@@ -48,6 +48,12 @@ class IngredientType(DjangoObjectType):
         fields = ("id", "amount", "unit", "item", "recipe")
 
 
+class IngredientInputType(graphene.InputObjectType):
+    amount = graphene.Int(required=True)
+    unit = graphene.String()
+    item = graphene.String(required=True)
+
+
 class InstructionType(DjangoObjectType):
     class Meta:
         model = RecipeInstruction
@@ -81,13 +87,14 @@ class CreateRecipe(graphene.Mutation):
         datePublished = graphene.Date()
         description = graphene.String()
         name = graphene.String()
+        recipeIngredients = graphene.List(IngredientInputType)
     ok = graphene.Boolean()
     recipe = graphene.Field(lambda: RecipeType)
 
     @classmethod
     def mutate(cls, root, info, cookTime, cookingMethod, recipeCategory, recipeCuisine, recipeYieldAmount,
                recipeYieldUnits, estimatedCost, preformTime, prepTime, totalTime, author, datePublished, description,
-               name):
+               name, recipeIngredients):
         recipe = Recipe(cookTime=datetime.timedelta(seconds=cookTime), cookingMethod=cookingMethod,
                         recipeCategory=recipeCategory, recipeCuisine=recipeCuisine, recipeYieldAmount=recipeYieldAmount,
                         recipeYieldUnits=recipeYieldUnits, estimatedCost=estimatedCost,
@@ -96,6 +103,9 @@ class CreateRecipe(graphene.Mutation):
                         totalTime=datetime.timedelta(seconds=totalTime), author=author, datePublished=datePublished,
                         description=description, name=name)
         recipe.save()
+        for ingredient in recipeIngredients:
+            recipe.recipeIngredients.create(amount=ingredient.amount, unit=ingredient.unit,
+                                            item=ingredient.item)
         return CreateRecipe(ok=True, recipe=recipe)
 
 
