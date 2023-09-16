@@ -100,6 +100,70 @@ class Query(graphene.ObjectType):
         return list(RecipeTool.objects.all())
 
 
+class EditRecipe(graphene.Mutation):
+    class Arguments:
+        id = graphene.ID()
+        cookTime = graphene.Int()
+        cookingMethod = graphene.String()
+        recipeCategory = graphene.String()
+        recipeCuisine = graphene.String()
+        recipeYieldAmount = graphene.Int()
+        recipeYieldUnits = graphene.String()
+        estimatedCost = graphene.Decimal()
+        preformTime = graphene.Int()
+        prepTime = graphene.Int()
+        totalTime = graphene.Int()
+        author = graphene.String()
+        datePublished = graphene.Date()
+        description = graphene.String()
+        name = graphene.String()
+        recipeIngredients = graphene.List(IngredientInputType)
+        recipeInstructions = graphene.List(InstructionInputType)
+        recipeSupplies = graphene.List(SupplyInputType)
+        toolsUsed = graphene.List(ToolInputType)
+    ok = graphene.Boolean()
+    recipe = graphene.Field(lambda: RecipeType)
+
+    @classmethod
+    def mutate(cls, root, info, id, cookTime, cookingMethod, recipeCategory, recipeCuisine, recipeYieldAmount,
+               recipeYieldUnits, estimatedCost, preformTime, prepTime, totalTime, author, datePublished, description,
+               name, recipeIngredients, recipeInstructions, recipeSupplies, toolsUsed):
+        recipe = Recipe.objects.get(id=id)
+        recipe.cookTime = datetime.timedelta(seconds=cookTime)
+        recipe.cookingMethod = cookingMethod
+        recipe.recipeCategory = recipeCategory
+        recipe.recipeCuisine = recipeCuisine
+        recipe.recipeYieldAmount = recipeYieldAmount
+        recipe.recipeYieldUnits = recipeYieldUnits
+        recipe.estimatedCost = estimatedCost
+        recipe.preformTime = datetime.timedelta(seconds=preformTime)
+        recipe.prepTime = datetime.timedelta(seconds=prepTime)
+        recipe.totalTime = datetime.timedelta(seconds=totalTime)
+        recipe.author = author
+        recipe.datePublished = datePublished
+        recipe.description = description
+        recipe.name = name
+        recipe.recipeIngredients.all().delete()
+        for ingredient in recipeIngredients:
+            recipe.recipeIngredients.create(amount=ingredient.amount, unit=ingredient.unit,
+                                            item=ingredient.item)
+        recipe.recipeInstructions.all().delete()
+        for instruction in recipeInstructions:
+            recipe.recipeInstructions.create(stepNumber=instruction.stepNumber, instruction=instruction.instruction)
+        recipe.recipeSupplies.all().delete()
+        for supply in recipeSupplies:
+            recipe.recipeSupplies.create(amount=supply.amount, unit=supply.unit, item=supply.item)
+        recipe.toolsUsed.clear()
+        for tool in toolsUsed:
+            foundTool = RecipeTool.objects.filter(item=tool.item)
+            if foundTool.count() == 0:
+                recipe.toolsUsed.create(item=tool.item)
+            elif foundTool.count() == 1:
+                recipe.toolsUsed.add(foundTool.get(item=tool.item))
+        recipe.save()
+        return EditRecipe(ok=True, recipe=recipe)
+
+
 class CreateRecipe(graphene.Mutation):
     class Arguments:
         cookTime = graphene.Int()
@@ -151,8 +215,22 @@ class CreateRecipe(graphene.Mutation):
         return CreateRecipe(ok=True, recipe=recipe)
 
 
+class DeleteRecipe(graphene.Mutation):
+    class Arguments:
+        id = graphene.ID()
+    ok = graphene.Boolean()
+
+    @classmethod
+    def mutate(cls, root, info, id):
+        Recipe.objects.get(id=id).delete()
+        return DeleteRecipe(ok=True)
+
+
+
 class MyMutations(graphene.ObjectType):
     create_recipe = CreateRecipe.Field()
+    delete_recipe = DeleteRecipe.Field()
+    edit_recipe = EditRecipe.Field()
 
 
 schema = graphene.Schema(query=Query, mutation=MyMutations)
