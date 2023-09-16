@@ -1,7 +1,7 @@
 import graphene
 from graphene_django import DjangoObjectType
 
-from recipeSite.cookbook.models import Recipe, RecipeTool, RecipeSupply, RecipeIngredient, RecipeInstruction
+from cookbook.models import Recipe, RecipeTool, RecipeSupply, RecipeIngredient, RecipeInstruction
 
 
 class RecipeType(DjangoObjectType):
