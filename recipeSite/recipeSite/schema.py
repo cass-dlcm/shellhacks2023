@@ -81,11 +81,11 @@ class CreateRecipe(graphene.Mutation):
     recipe = graphene.Field(lambda: RecipeType)
 
     @classmethod
-    def mutate(cls, root, info, cookTime, cookingMethod, recipeCategory, recipeCusine, recipeYieldAmount,
+    def mutate(cls, root, info, cookTime, cookingMethod, recipeCategory, recipeCuisine, recipeYieldAmount,
                recipeYieldUnits, estimatedCost, preformTime, prepTime, totalTime, author, datePublished, description,
                name):
         recipe = Recipe(cookTime=datetime.timedelta(seconds=cookTime), cookingMethod=cookingMethod,
-                        recipeCategory=recipeCategory, recipeCusine=recipeCusine, recipeYieldAmount=recipeYieldAmount,
+                        recipeCategory=recipeCategory, recipeCuisine=recipeCuisine, recipeYieldAmount=recipeYieldAmount,
                         recipeYieldUnits=recipeYieldUnits, estimatedCost=estimatedCost,
                         preformTime=datetime.timedelta(seconds=preformTime),
                         prepTime=datetime.timedelta(seconds=prepTime),
