@@ -6,7 +6,7 @@ const Recipe = (props) => {
         <img className="recipeImg" src={props.image}></img>
         <h2>{props.name}</h2>
         <p>{props.description}</p>
-        <h5>Ingredients:</h5>
+        <h5>Ingredients & Supplies:</h5>
         </>
     )
 }
