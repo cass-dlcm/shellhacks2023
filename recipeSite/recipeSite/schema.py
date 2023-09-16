@@ -23,7 +23,7 @@ class RecipeType(DjangoObjectType):
         model = Recipe
         fields = ("id", "name", "recipeCategory", "recipeCuisine", "recipeYieldAmount", "recipeYieldUnits",
                   "estimatedCost", "preformTime", "prepTime", "totalTime", "author", "datePublished", "description",
-                  "cookTime")
+                  "cookTime", "cookingMethod")
 
 
 class ToolType(DjangoObjectType):
@@ -55,10 +55,10 @@ class Query(graphene.ObjectType):
     all_tools = graphene.List(ToolType)
 
     def resolve_all_recipies(root, info):
-        return Recipe.objects.all()
+        return list(Recipe.objects.all())
 
     def resolve_all_tools(root, info):
-        return RecipeTool.objects.all()
+        return list(RecipeTool.objects.all())
 
 
 class CreateRecipe(graphene.Mutation):
@@ -97,5 +97,6 @@ class CreateRecipe(graphene.Mutation):
 
 class MyMutations(graphene.ObjectType):
     create_recipe = CreateRecipe.Field()
+
 
 schema = graphene.Schema(query=Query, mutation=MyMutations)
