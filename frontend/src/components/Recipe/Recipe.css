@@ -1,6 +1,7 @@
 .recipeImg {
     width: 100%;
-    max-width: 250px;
-    max-height: 250px;
-    border: 10px solid black;
+    max-width: 200px;
+    max-height: 200px;
+    border: 10px solid palevioletred;
+    border-radius: 50%;
   }
