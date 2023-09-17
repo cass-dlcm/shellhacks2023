@@ -1,4 +1,5 @@
 import React from "react";
+import Ingredients from "../Ingredients";
 
 const Recipe = (props) => {
     return (
@@ -6,7 +7,6 @@ const Recipe = (props) => {
         <img className="recipeImg" src={props.image}></img>
         <h2>{props.name}</h2>
         <p>{props.description}</p>
-        <h5>Ingredients & Supplies:</h5>
         </>
     )
 }
